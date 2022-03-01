@@ -27,14 +27,14 @@ parser.add_argument('title', help='title is required', location=['json', 'args']
 parser.add_argument('author', help='author is required', location=['json', 'args'], required=True)
 parser.add_argument('read', help='read is required', location=['json', 'args'], required=True)
 
-parser_del = reqparse.RequestParser(bundle_errors=True)
-parser_del.add_argument("id", help="id is required", location=["json", "args"], required=True)
-
 parser_put = reqparse.RequestParser(bundle_errors=True)
 parser_put.add_argument("id", help="id is required", location=["json", "args"], required=True)
 parser_put.add_argument('title', help='title is required', location=['json', 'args'], required=True)
 parser_put.add_argument('author', help='author is required', location=['json', 'args'], required=True)
 parser_put.add_argument('read', help='read is required', location=['json', 'args'], required=True)
+
+parser_del = reqparse.RequestParser(bundle_errors=True)
+parser_del.add_argument("id", help="id is required", location=["json", "args"], required=True)
 
 BOOKS = [
     {
@@ -87,18 +87,6 @@ class API_BOOK(Resource):
         response_object = {"message": "Book added!", 'status': 'success'}
         return jsonify(response_object)
 
-    def delete(self):
-        response_object = {'status': 'success'}
-        args = parser_del.parse_args(strict=True)
-        id = args["id"]
-        flg = remove_book(id)
-        if flg:
-            response_object['message'] = 'Book deleted!'
-        else:
-            response_object['message'] = "Can't find this book"
-        
-        return jsonify(response_object)
-
     def put(self):
         response_object = {'status': 'success'}
         args = parser_put.parse_args(strict=True)
@@ -113,10 +101,21 @@ class API_BOOK(Resource):
             })
             response_object['message'] = 'Book updated!'
         else:
-            response_object['message'] = "Can't find this book"
+            response_object = {'message': "Can't find this book.", 'status': "Failed"}
 
         return jsonify(response_object)
-
+        
+    def delete(self):
+        response_object = {'status': 'success'}
+        args = parser_del.parse_args(strict=True)
+        id = args["id"]
+        flg = remove_book(id)
+        if flg:
+            response_object['message'] = 'Book deleted!'
+        else:
+            response_object = {'message': "Can't find this book.", 'status': "Failed"}
+        
+        return jsonify(response_object)
 
 def remove_book(book_id):
     for i in range(0, len(BOOKS)):

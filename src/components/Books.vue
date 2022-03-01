@@ -32,12 +32,15 @@
               <td>
                 <button
                   type="button"
-                  @click="UpdateDiolog"
+                  @click="UpdateDiolog(book)"
                   class="btn btn-warning btn-sm"
                 >
                   Update
                 </button>
-                <button type="button" class="btn btn-danger btn-sm">
+                <button
+                  type="button"
+                  @click="DeleteDiolog(book)"
+                  class="btn btn-danger btn-sm">
                   Delete
                 </button>
               </td>
@@ -161,7 +164,7 @@
             <button
               type="submit"
               class="btn btn-success"
-              @click="editBook"
+              @click="onSubmitUpdate"
               variant="primary"
             >
               Update
@@ -171,6 +174,75 @@
               class="btn btn-primary"
               @click="CloseDiolog"
               variant="danger"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+
+        <!-- delete Form -->
+        <div
+          id="AdddeleteForm"
+          class="card w-75"
+          v-show="deleteFormDisplay"
+          ref="editBookModal"
+        >
+          <div class="card-body">
+            <h5 class="card-title">Delete Book</h5>
+            <button
+              type="button"
+              @click="CloseDiolog"
+              class="btn-close"
+              aria-label="Close"
+            ></button>
+            <form class="row g-3">
+              <div class="col-md-4">
+                <label for="inputTitle" class="form-label">Title</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="inputTitle"
+                  v-model="deleteForm.title"
+                  disabled
+                />
+              </div>
+              <div class="col-md-4">
+                <label for="inputAuthor" class="form-label">Author</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="inputAuthor"
+                  v-model="deleteForm.author"
+                  disabled
+                />
+              </div>
+              <div class="col-md-4">
+                <label for="inputRead" class="form-label">Read</label>
+                <select
+                  id="inputRead"
+                  class="form-select"
+                  v-model="deleteForm.read"
+                  disabled
+                >
+                  <option>true</option>
+                  <option>false</option>
+                </select>
+              </div>
+            </form>
+            <div class="errorMessage">
+              {{ deleteErrorMes }}
+            </div>
+            <button
+              type="submit"
+              class="btn btn-danger"
+              @click="onDeleteBook"
+            >
+              Delete
+            </button>
+            <button
+              type="reset"
+              class="btn btn-primary"
+              @click="CloseDiolog"
             >
               Cancel
             </button>
@@ -203,6 +275,14 @@ export default {
       },
       editFormDisplay: false,
       editErrorMes: '',
+      deleteForm: {
+        id: '',
+        title: '',
+        author: '',
+        read: '',
+      },
+      deleteFormDisplay: false,
+      deleteErrorMes: '',
     };
   },
   methods: {
@@ -243,8 +323,15 @@ export default {
       const path = 'http://localhost:5000/v1/books/';
       axios
         .put(path, payload)
-        .then(() => {
-          this.getBooks();
+        .then((res) => {
+          if (res.data.status === 'Failed') {
+            this.editErrorMes = res.data.message;
+          } else {
+            this.editErrorMes = '';
+            this.getBooks();
+            this.editFormDisplay = false;
+          }
+          console.log(res);
         })
         .catch((error) => {
           // eslint-disable-next-line
@@ -256,8 +343,15 @@ export default {
       const path = 'http://localhost:5000/v1/books/';
       axios
         .delete(path, payload)
-        .then(() => {
-          this.getBooks();
+        .then((res) => {
+          if (res.data.status === 'Failed') {
+            this.deleteErrorMes = res.data.message;
+          } else {
+            this.deleteErrorMes = '';
+            this.getBooks();
+            this.deleteFormDisplay = false;
+          }
+          console.log(res);
         })
         .catch((error) => {
           // eslint-disable-next-line
@@ -287,18 +381,24 @@ export default {
     onSubmitUpdate(evt) {
       evt.preventDefault();
       const payload = {
+        id: this.editForm.id,
         title: this.editForm.title,
         author: this.editForm.author,
         read: this.editForm.read,
       };
-      this.updateBook(payload, this.editForm.id);
+      this.updateBook(payload);
     },
-    onDeleteBook() {
-      this.removeBook('id');
-    },
-    editBook() {
-      // this.editForm = book;
-      console.log('book');
+    // axois put & post 接受三個參數: url, data, config
+    // delete 接口只接受兩個參數: url, config
+    // 故必須將資料包在data裡面再傳
+    onDeleteBook(evt) {
+      evt.preventDefault();
+      const payload = {
+        data: {
+          id: this.deleteForm.id,
+        },
+      };
+      this.removeBook(payload);
     },
     onReset(evt) {
       evt.preventDefault();
@@ -307,13 +407,24 @@ export default {
     BookDiolog() {
       this.formDisplay = true;
     },
-    UpdateDiolog() {
+    UpdateDiolog(book) {
       this.editFormDisplay = true;
-      console.log(this.books[0]);
+      this.editForm.id = book.id;
+      this.editForm.title = book.title;
+      this.editForm.author = book.author;
+      this.editForm.read = book.read;
+    },
+    DeleteDiolog(book) {
+      this.deleteFormDisplay = true;
+      this.deleteForm.id = book.id;
+      this.deleteForm.title = book.title;
+      this.deleteForm.author = book.author;
+      this.deleteForm.read = book.read;
     },
     CloseDiolog() {
       this.formDisplay = false;
       this.editFormDisplay = false;
+      this.deleteFormDisplay = false;
     },
   },
   created() {
@@ -330,7 +441,8 @@ button {
   margin: 0 0.5rem;
 }
 #AddBookForm,
-#AddupdateForm {
+#AddupdateForm,
+#AdddeleteForm {
   position: fixed;
   top: 25vw;
   left: 13vw;
