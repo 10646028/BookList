@@ -1,4 +1,10 @@
-import { createApp } from 'vue'
-import App from './App.vue'
+import '@babel/polyfill';
+import 'mutationobserver-shim';
+// import './plugins/bootstrap-vue';
+import { createApp } from 'vue';
+import App from './App.vue';
+import router from './router';
 
-createApp(App).mount('#app')
+import 'bootstrap/dist/css/bootstrap.css';
+
+createApp(App).use(router).mount('#app');
