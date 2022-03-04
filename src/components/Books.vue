@@ -287,7 +287,7 @@ export default {
   },
   methods: {
     getBooks() {
-      const path = 'http://localhost:5000/v1/books/';
+      const path = 'https://booklist-byfei.herokuapp.com/v1/books/';
       axios
         .get(path)
         .then((res) => {
@@ -299,7 +299,7 @@ export default {
         });
     },
     addBook(payload) {
-      const path = 'http://localhost:5000/v1/books/';
+      const path = 'https://booklist-byfei.herokuapp.com/v1/books/';
       axios
         .post(path, payload)
         .then((res) => {
@@ -320,7 +320,7 @@ export default {
         });
     },
     updateBook(payload) {
-      const path = 'http://localhost:5000/v1/books/';
+      const path = 'https://booklist-byfei.herokuapp.com/v1/books/';
       axios
         .put(path, payload)
         .then((res) => {
@@ -340,7 +340,7 @@ export default {
         });
     },
     removeBook(payload) {
-      const path = 'http://localhost:5000/v1/books/';
+      const path = 'https://booklist-byfei.herokuapp.com/v1/books/';
       axios
         .delete(path, payload)
         .then((res) => {
